@@ -27,13 +27,15 @@
 
 Koala Shield is a small package and CLI tool written in Go to help investigate IP address/ASNs and manage block lists in AWS WAF Classic.
 
-Through Koala Shield is easy to track an IP address to their ASN owner and, if the ASN owner appears malicious, quickly create a AWS WAF Classic block rule to guard against any widespread malicious behavior.
+Koala Shield makes it easy to track any IP address to their ASN owner and, if the ASN owner appears malicious, quickly create a AWS WAF Classic block rule to guard against widespread malicious behavior.
+
+If a malicious actor is using a less-than scrupulous cloud provider to DDoS your application Koala Shield can be used to temporarily block the cloud provider and give you time to find a more permanent solution.
+
+**Be careful when blocking an entire ASN!** An ASN can encompass a wide range of services and networks so be sure to triple confirm before enabling the block. Koala Shield makes it easy to rollback a block if needed.
 
 <!-- GETTING STARTED -->
 
 ## Getting Started
-
-To get a local copy up and running follow these simple steps.
 
 ### Prerequisites
 
@@ -41,11 +43,11 @@ Koala Shield requires Go 1.15 or higher. As a prerequisite please [download and 
 
 ### Installation
 
-1. Clone the repo
+1. Install the binary
    ```sh
-   git clone https://github.com/koala-labs/koala-shield.git
+   go get github.com/koala-labs/koala-shield
    ```
-2. Set AWS credentials
+2. Set your [AWS credentials](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html#cli-configure-quickstart-config) and make sure to export your desired AWS region.
    ```sh
    export $AWS_REGION=region
    ```
