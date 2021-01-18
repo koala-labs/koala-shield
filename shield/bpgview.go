@@ -34,6 +34,7 @@ type lookupInterface interface {
 // lookupClient .
 type lookupClient struct {
 	baseURL    string
+	limiter    <-chan time.Time
 	HTTPClient *http.Client
 }
 
@@ -43,6 +44,7 @@ func newLookupClient() *lookupClient {
 		HTTPClient: &http.Client{
 			Timeout: 5 * time.Minute,
 		},
+		limiter: time.Tick(1 * time.Second),
 		baseURL: "https://api.bgpview.io",
 	}
 }
@@ -54,6 +56,11 @@ type response struct {
 }
 
 func (c *lookupClient) send(req *http.Request, data interface{}) error {
+	// give the BPGView API a bit of time between requests to avoid 503 and rate limitting
+	if c.limiter != nil {
+		<-c.limiter
+	}
+
 	req.Header.Set("Accept", "application/json; charset=utf-8")
 
 	res, err := c.HTTPClient.Do(req)
