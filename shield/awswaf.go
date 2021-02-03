@@ -32,6 +32,7 @@ type wafInterface interface {
 	listWAFClassicIPSets() ([]WAFClassicIPSetResponse, error)
 	getOrCreateWAFClassicIPSet(name string) (WAFClassicIPSetResponse, error)
 	findWAFClassicIPSet(name string) (string, error)
+	checkCidrSupportInWAFClassic(cidr int) bool
 	addIPsToWAFClassicIPSet(IPSetID string, IPs []string) error
 	getOrCreateWAFClassicRule(name string) (WAFClassicRuleResponse, error)
 	findWAFClassicRule(name string) (string, error)
@@ -300,6 +301,10 @@ func (c *awsWAFClient) findWAFClassicRule(name string) (string, error) {
 	}
 
 	return find(name, "")
+}
+
+func (c *awsWAFClient) checkCidrSupportInWAFClassic(cidr int) bool {
+	return cidr == 8 || (cidr >= 16 && cidr <= 32)
 }
 
 // addIPSetToWAFClassicRule adds specified IPSet to Rule

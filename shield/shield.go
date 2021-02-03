@@ -60,7 +60,9 @@ func (s *Shield) CreateBlockList(asn string) error {
 	var ips []string
 
 	for _, prefix := range lookup.IPv4 {
-		ips = append(ips, prefix.Prefix)
+		if s.waf.checkCidrSupportInWAFClassic(prefix.Cidr) {
+			ips = append(ips, prefix.Prefix)
+		}
 	}
 
 	err = s.waf.addIPsToWAFClassicIPSet(ipset.ID, ips)

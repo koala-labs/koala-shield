@@ -21,6 +21,9 @@ func (c *mockWAFClient) getOrCreateWAFClassicIPSet(name string) (WAFClassicIPSet
 func (c *mockWAFClient) findWAFClassicIPSet(name string) (string, error) {
 	return fmt.Sprintf("WAFClassicIPSetID-%s", name), nil
 }
+func (c *mockWAFClient) checkCidrSupportInWAFClassic(cidr int) bool {
+	return true
+}
 func (c *mockWAFClient) addIPsToWAFClassicIPSet(IPSetID string, IPs []string) error {
 	return nil
 }

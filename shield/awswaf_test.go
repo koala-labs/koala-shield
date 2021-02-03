@@ -207,6 +207,34 @@ func TestFindWAFClassicIPSet(t *testing.T) {
 	}
 }
 
+func TestCheckCidrSupport(t *testing.T) {
+	awsWAFClient := &awsWAFClient{
+		waf: mockedWafRegional{},
+	}
+
+	for cidr := 0; cidr < 8; cidr++ {
+		if awsWAFClient.checkCidrSupportInWAFClassic(cidr) {
+			t.Errorf("checkCidrSupportInWAFClassic should not support cidr: %d", cidr)
+		}
+	}
+
+	if !awsWAFClient.checkCidrSupportInWAFClassic(8) {
+		t.Errorf("checkCidrSupportInWAFClassic should support cidr: %d", 8)
+	}
+
+	for cidr := 9; cidr < 16; cidr++ {
+		if awsWAFClient.checkCidrSupportInWAFClassic(cidr) {
+			t.Errorf("checkCidrSupportInWAFClassic should not support cidr: %d", cidr)
+		}
+	}
+
+	for cidr := 16; cidr < 33; cidr++ {
+		if !awsWAFClient.checkCidrSupportInWAFClassic(cidr) {
+			t.Errorf("checkCidrSupportInWAFClassic should support cidr: %d", cidr)
+		}
+	}
+}
+
 func TestAddIPsToWAFClassicIPSet(t *testing.T) {
 	awsWAFClient := &awsWAFClient{
 		waf: mockedWafRegional{},
