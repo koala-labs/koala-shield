@@ -1,5 +1,7 @@
 # Koala Shield 🐨 🛡
 
+[![codecov](https://codecov.io/gh/koala-labs/koala-shield/branch/master/graph/badge.svg?token=dTkxsZcXan)](https://codecov.io/gh/koala-labs/koala-shield)
+
 <!-- TABLE OF CONTENTS -->
 <details open="open">
   <summary><h2 style="display: inline-block">Table of Contents</h2></summary>
@@ -14,7 +16,15 @@
         <li><a href="#installation">Installation</a></li>
       </ul>
     </li>
-    <li><a href="#usage">Usage</a></li>
+    <li>
+      <a href="#usage">Usage</a>
+      <ul>
+        <li><a href="#lookup">lookup</a></li>
+        <li><a href="#block">block</a></li>
+        <li><a href="#un-block">un-block</a></li>
+        <li><a href="#ipsets">ipsets</a></li>
+      </ul>
+    </li>
     <li><a href="#test">Tests</a></li>
     <li><a href="#contributing">Contributing</a></li>
     <li><a href="#license">License</a></li>
@@ -109,7 +119,7 @@ Koala Shield has a full unit-test suite.
 Use the following command to run the tests and output function-level code coverage
 
 ```sh
-go test ./... -coverprofile coverage.out && go tool cover -func coverage.out
+go test ./... -coverprofile coverage.out && go tool cover -func coverage.txt
 ```
 
 <!-- CONTRIBUTING -->
