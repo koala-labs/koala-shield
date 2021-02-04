@@ -1,4 +1,4 @@
-# Koala Shield
+# Koala Shield 🐨 🛡
 
 <!-- TABLE OF CONTENTS -->
 <details open="open">
@@ -40,7 +40,7 @@ If a malicious actor is using a less-than scrupulous cloud provider to DDoS your
 
 ### Prerequisites
 
-Koala Shield requires Go 1.15 or higher. As a prerequisite please [download and install Go](https://golang.org/doc/install) in your system
+Koala Shield requires Go 1.15 or higher. As a prerequisite please [download and install Go](https://golang.org/doc/install) and make sure Go compiled binaries are included in your `$PATH` (e.g. `export PATH=$GOPATH/bin:$PATH`)
 
 ### Installation
 
