@@ -1,6 +1,6 @@
 # Koala Shield 🐨 🛡
 
-[![codecov](https://codecov.io/gh/koala-labs/koala-shield/branch/master/graph/badge.svg?token=dTkxsZcXan)](https://codecov.io/gh/koala-labs/koala-shield)
+[![codecov](https://codecov.io/gh/koala-labs/koala-shield/branch/main/graph/badge.svg?token=dTkxsZcXan)](https://codecov.io/gh/koala-labs/koala-shield)
 
 <!-- TABLE OF CONTENTS -->
 <details open="open">
@@ -60,7 +60,7 @@ Koala Shield requires Go 1.15 or higher. As a prerequisite please [download and 
    ```
 2. Set your [AWS credentials](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html#cli-configure-quickstart-config) and make sure to export your desired AWS region.
    ```sh
-   export $AWS_REGION=region
+   export AWS_REGION=region
    ```
 
 <!-- USAGE EXAMPLES -->
@@ -119,7 +119,7 @@ Koala Shield has a full unit-test suite.
 Use the following command to run the tests and output function-level code coverage
 
 ```sh
-go test ./... -coverprofile coverage.out && go tool cover -func coverage.txt
+go test ./... -coverprofile coverage.txt && go tool cover -func coverage.txt
 ```
 
 <!-- CONTRIBUTING -->
@@ -145,4 +145,4 @@ Distributed under the Apache License, Version 2.0. See `LICENSE` for more inform
 
 ## Contact
 
-Koala Labs - [@https://twitter.com/koala_labs](https://twitter.com/https://twitter.com/koala_labs) - engineering@koala.io
+Koala Labs - [@koala_labs](https://twitter.com/koala_labs) - engineering@koala.io
