@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestIpLookup(t *testing.T) {
+func TestIpLookupSuccess(t *testing.T) {
 	mock := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
@@ -142,7 +142,35 @@ func TestIpLookup(t *testing.T) {
 	}
 }
 
-func TestAsnLookup(t *testing.T) {
+func TestIpLookupFailure(t *testing.T) {
+	mock := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{
+			"status": "error",
+			"status_message": "Malformed input",
+			"@meta": {
+				"time_zone": "UTC",
+				"api_version": 1,
+				"execution_time": "4.20 ms"
+			}
+		}`))
+	}))
+	defer mock.Close()
+
+	client := &lookupClient{
+		HTTPClient: &http.Client{},
+		baseURL:    mock.URL,
+	}
+
+	_, err := client.ipLookup("not a real ip")
+
+	if err == nil {
+		t.Errorf("ipLookup should have returned an error")
+	}
+}
+
+func TestAsnLookupSuccess(t *testing.T) {
 	mock := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
@@ -224,7 +252,35 @@ func TestAsnLookup(t *testing.T) {
 	}
 }
 
-func TestAsnPrefixesLookup(t *testing.T) {
+func TestAsnLookupFailure(t *testing.T) {
+	mock := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{
+			"status": "error",
+			"status_message": "Malformed input",
+			"@meta": {
+				"time_zone": "UTC",
+				"api_version": 1,
+				"execution_time": "4.20 ms"
+			}
+		}`))
+	}))
+	defer mock.Close()
+
+	client := &lookupClient{
+		HTTPClient: &http.Client{},
+		baseURL:    mock.URL,
+	}
+
+	_, err := client.asnLookup("not a real asn")
+
+	if err == nil {
+		t.Errorf("asnLookup should have returned an error")
+	}
+}
+
+func TestAsnPrefixesLookupSuccess(t *testing.T) {
 	mock := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
@@ -342,5 +398,33 @@ func TestAsnPrefixesLookup(t *testing.T) {
 	}
 	if asnPrefixesResponse.IPv4[0].Prefix != "103.208.86.0/24" {
 		t.Errorf("asnPrefixesLookup for ASN IPv4 prefixes Prefix was incorrect, got: %s, want: %s.", asnPrefixesResponse.IPv4[0].Prefix, "103.208.86.0/24")
+	}
+}
+
+func TestAsnPrefixesLookupFailure(t *testing.T) {
+	mock := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{
+			"status": "error",
+			"status_message": "Malformed input",
+			"@meta": {
+				"time_zone": "UTC",
+				"api_version": 1,
+				"execution_time": "4.20 ms"
+			}
+		}`))
+	}))
+	defer mock.Close()
+
+	client := &lookupClient{
+		HTTPClient: &http.Client{},
+		baseURL:    mock.URL,
+	}
+
+	_, err := client.asnPrefixesLookup("not a real asn")
+
+	if err == nil {
+		t.Errorf("asnPrefixesLookup should have returned an error")
 	}
 }
