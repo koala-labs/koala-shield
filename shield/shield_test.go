@@ -93,6 +93,18 @@ func (c *mockLookupClient) asnPrefixesLookup(asn string) (*asnPrefixesLookupResp
 	return &response, nil
 }
 
+func TestNewShield(t *testing.T) {
+	shield := NewShield("us-east-1")
+
+	if shield.waf == nil {
+		t.Errorf("TestNewShield did not initialize waf attribute correctly")
+	}
+
+	if shield.lookup == nil {
+		t.Errorf("TestNewShield did not initialize lookup attribute correctly")
+	}
+}
+
 func TestLookup(t *testing.T) {
 	mockShield := &Shield{waf: &mockWAFClient{}, lookup: &mockLookupClient{}}
 
