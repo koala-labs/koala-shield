@@ -142,7 +142,7 @@ func TestIpLookupSuccess(t *testing.T) {
 	}
 }
 
-func TestIpLookupFailure(t *testing.T) {
+func TestIpLookupError(t *testing.T) {
 	mock := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
@@ -155,6 +155,25 @@ func TestIpLookupFailure(t *testing.T) {
 				"execution_time": "4.20 ms"
 			}
 		}`))
+	}))
+	defer mock.Close()
+
+	client := &lookupClient{
+		HTTPClient: &http.Client{},
+		baseURL:    mock.URL,
+	}
+
+	_, err := client.ipLookup("not a real ip")
+
+	if err == nil {
+		t.Errorf("ipLookup should have returned an error")
+	}
+}
+
+func TestIpLookupFailure(t *testing.T) {
+	mock := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		w.WriteHeader(http.StatusServiceUnavailable)
 	}))
 	defer mock.Close()
 
@@ -252,7 +271,7 @@ func TestAsnLookupSuccess(t *testing.T) {
 	}
 }
 
-func TestAsnLookupFailure(t *testing.T) {
+func TestAsnLookupError(t *testing.T) {
 	mock := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
@@ -265,6 +284,25 @@ func TestAsnLookupFailure(t *testing.T) {
 				"execution_time": "4.20 ms"
 			}
 		}`))
+	}))
+	defer mock.Close()
+
+	client := &lookupClient{
+		HTTPClient: &http.Client{},
+		baseURL:    mock.URL,
+	}
+
+	_, err := client.asnLookup("not a real asn")
+
+	if err == nil {
+		t.Errorf("asnLookup should have returned an error")
+	}
+}
+
+func TestAsnLookupFailure(t *testing.T) {
+	mock := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		w.WriteHeader(http.StatusServiceUnavailable)
 	}))
 	defer mock.Close()
 
@@ -401,7 +439,7 @@ func TestAsnPrefixesLookupSuccess(t *testing.T) {
 	}
 }
 
-func TestAsnPrefixesLookupFailure(t *testing.T) {
+func TestAsnPrefixesLookupError(t *testing.T) {
 	mock := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
@@ -414,6 +452,25 @@ func TestAsnPrefixesLookupFailure(t *testing.T) {
 				"execution_time": "4.20 ms"
 			}
 		}`))
+	}))
+	defer mock.Close()
+
+	client := &lookupClient{
+		HTTPClient: &http.Client{},
+		baseURL:    mock.URL,
+	}
+
+	_, err := client.asnPrefixesLookup("not a real asn")
+
+	if err == nil {
+		t.Errorf("asnPrefixesLookup should have returned an error")
+	}
+}
+
+func TestAsnPrefixesLookupFailure(t *testing.T) {
+	mock := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		w.WriteHeader(http.StatusServiceUnavailable)
 	}))
 	defer mock.Close()
 
