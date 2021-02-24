@@ -196,6 +196,20 @@ func TestCreateBlockList(t *testing.T) {
 	}
 }
 
+func TestCreateBlockListDoesNotAcceptIPs(t *testing.T) {
+	mockShield := &Shield{
+		waf:    &mockWAFClient{},
+		lookup: &mockLookupClient{},
+	}
+
+	ip := "192.168.1.1"
+
+	err := mockShield.CreateBlockList(ip)
+	if err == nil {
+		t.Errorf("CreateBlockList should have returned an error when an IP address is used")
+	}
+}
+
 func TestEnableBlockList(t *testing.T) {
 	mockShield := &Shield{
 		waf:    &mockWAFClient{},
