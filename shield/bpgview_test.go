@@ -189,6 +189,26 @@ func TestIpLookupFailure(t *testing.T) {
 	}
 }
 
+func TestIpLookupNotJson(t *testing.T) {
+	mock := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`not json`))
+	}))
+	defer mock.Close()
+
+	client := &lookupClient{
+		HTTPClient: &http.Client{},
+		baseURL:    mock.URL,
+	}
+
+	_, err := client.ipLookup("8.6.8.0")
+
+	if err == nil {
+		t.Errorf("ipLookup should have returned an error for a bad JSON payload")
+	}
+}
+
 func TestAsnLookupSuccess(t *testing.T) {
 	mock := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
