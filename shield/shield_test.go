@@ -19,7 +19,13 @@ func (c *mockWAFClient) getOrCreateWAFClassicIPSet(name string) (WAFClassicIPSet
 	return WAFClassicIPSetResponse{}, nil
 }
 func (c *mockWAFClient) findWAFClassicIPSet(name string) (string, error) {
-	return fmt.Sprintf("WAFClassicIPSetID-%s", name), nil
+	if name == "SHIELD-ASN20473-IPs" {
+		return fmt.Sprintf("WAFClassicIPSetID-%s", name), nil
+	} else if name == "SHIELD-ASN55555-IPs" {
+		return "", nil
+	} else {
+		return "", fmt.Errorf("findWAFClassicIPSet failed")
+	}
 }
 func (c *mockWAFClient) checkCidrSupportInWAFClassic(cidr int) bool {
 	return true
@@ -178,7 +184,35 @@ func TestDisableBlockList(t *testing.T) {
 
 	err := mockShield.DisableBlockList(asn)
 	if err != nil {
-		t.Errorf("EnableBlockList failed, got: %e", err)
+		t.Errorf("DisableBlockList failed, got: %e", err)
+	}
+}
+
+func TestDisableBlockListIPSetNotFound(t *testing.T) {
+	mockShield := &Shield{
+		waf:    &mockWAFClient{},
+		lookup: &mockLookupClient{},
+	}
+
+	asn := "55555"
+
+	err := mockShield.DisableBlockList(asn)
+	if err == nil {
+		t.Errorf("DisableBlockList should fail when looking up an IPSet that does not exist")
+	}
+}
+
+func TestDisableBlockListError(t *testing.T) {
+	mockShield := &Shield{
+		waf:    &mockWAFClient{},
+		lookup: &mockLookupClient{},
+	}
+
+	asn := "11111"
+
+	err := mockShield.DisableBlockList(asn)
+	if err == nil {
+		t.Errorf("DisableBlockList should fail when lookup fails")
 	}
 }
 
@@ -221,5 +255,19 @@ func TestEnableBlockList(t *testing.T) {
 	err := mockShield.EnableBlockList(asn)
 	if err != nil {
 		t.Errorf("EnableBlockList failed, got: %e", err)
+	}
+}
+
+func TestEnableBlockListError(t *testing.T) {
+	mockShield := &Shield{
+		waf:    &mockWAFClient{},
+		lookup: &mockLookupClient{},
+	}
+
+	asn := "11111"
+
+	err := mockShield.EnableBlockList(asn)
+	if err == nil {
+		t.Errorf("EnableBlockList should fail when lookup fails")
 	}
 }
