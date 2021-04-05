@@ -21,11 +21,8 @@ func (c *mockWAFClient) getOrCreateWAFClassicIPSet(name string) (WAFClassicIPSet
 func (c *mockWAFClient) findWAFClassicIPSet(name string) (string, error) {
 	if name == "SHIELD-ASN20473-IPs" {
 		return fmt.Sprintf("WAFClassicIPSetID-%s", name), nil
-	} else if name == "SHIELD-ASN55555-IPs" {
-		return "", nil
-	} else {
-		return "", fmt.Errorf("findWAFClassicIPSet failed")
 	}
+	return "", nil
 }
 func (c *mockWAFClient) checkCidrSupportInWAFClassic(cidr int) bool {
 	return true
@@ -44,6 +41,36 @@ func (c *mockWAFClient) addIPSetToWAFClassicRule(RuleID string, IPSetID string) 
 }
 func (c *mockWAFClient) removeIPSetFromWAFClassicRule(RuleID string, IPSetID string) error {
 	return nil
+}
+
+type mockWAFErrorClient struct{}
+
+func (c *mockWAFErrorClient) listWAFClassicIPSets() ([]WAFClassicIPSetResponse, error) {
+	return []WAFClassicIPSetResponse{}, fmt.Errorf("listWAFClassicIPSets failed")
+}
+func (c *mockWAFErrorClient) getOrCreateWAFClassicIPSet(name string) (WAFClassicIPSetResponse, error) {
+	return WAFClassicIPSetResponse{}, fmt.Errorf("getOrCreateWAFClassicIPSet failed")
+}
+func (c *mockWAFErrorClient) findWAFClassicIPSet(name string) (string, error) {
+	return "", fmt.Errorf("findWAFClassicIPSet failed")
+}
+func (c *mockWAFErrorClient) checkCidrSupportInWAFClassic(cidr int) bool {
+	return true
+}
+func (c *mockWAFErrorClient) addIPsToWAFClassicIPSet(IPSetID string, IPs []string) error {
+	return fmt.Errorf("addIPsToWAFClassicIPSet failed")
+}
+func (c *mockWAFErrorClient) getOrCreateWAFClassicRule(name string) (WAFClassicRuleResponse, error) {
+	return WAFClassicRuleResponse{}, fmt.Errorf("getOrCreateWAFClassicRule failed")
+}
+func (c *mockWAFErrorClient) findWAFClassicRule(name string) (string, error) {
+	return "", fmt.Errorf("findWAFClassicRule failed")
+}
+func (c *mockWAFErrorClient) addIPSetToWAFClassicRule(RuleID string, IPSetID string) error {
+	return fmt.Errorf("addIPSetToWAFClassicRule failed")
+}
+func (c *mockWAFErrorClient) removeIPSetFromWAFClassicRule(RuleID string, IPSetID string) error {
+	return fmt.Errorf("removeIPSetFromWAFClassicRule failed")
 }
 
 type mockLookupClient struct{}
@@ -99,6 +126,7 @@ func (c *mockLookupClient) asnPrefixesLookup(asn string) (*asnPrefixesLookupResp
 	return &response, nil
 }
 
+// TESTS
 func TestNewShield(t *testing.T) {
 	shield := NewShield("us-east-1")
 
@@ -152,7 +180,6 @@ func TestLookup(t *testing.T) {
 	}
 }
 
-// TESTS
 func TestListIPSets(t *testing.T) {
 	mockShield := &Shield{waf: &mockWAFClient{}, lookup: &mockLookupClient{}}
 
@@ -171,6 +198,16 @@ func TestListIPSets(t *testing.T) {
 		if ipset.ID != expected[index].ID {
 			t.Errorf("ListIPSets return value was incorrect, got: %s, want: %s.", ipset.ID, expected[index].ID)
 		}
+	}
+}
+
+func TestListIPSetsError(t *testing.T) {
+	mockShield := &Shield{waf: &mockWAFErrorClient{}, lookup: &mockLookupClient{}}
+
+	_, err := mockShield.ListIPSets()
+
+	if err == nil {
+		t.Errorf("ListIPSets should have returned an error when an waf.listWAFClassicIPSets fails")
 	}
 }
 
@@ -204,7 +241,7 @@ func TestDisableBlockListIPSetNotFound(t *testing.T) {
 
 func TestDisableBlockListError(t *testing.T) {
 	mockShield := &Shield{
-		waf:    &mockWAFClient{},
+		waf:    &mockWAFErrorClient{},
 		lookup: &mockLookupClient{},
 	}
 
@@ -244,6 +281,20 @@ func TestCreateBlockListDoesNotAcceptIPs(t *testing.T) {
 	}
 }
 
+func TestCreateBlockListError(t *testing.T) {
+	mockShield := &Shield{
+		waf:    &mockWAFErrorClient{},
+		lookup: &mockLookupClient{},
+	}
+
+	asn := "20473"
+
+	err := mockShield.CreateBlockList(asn)
+	if err == nil {
+		t.Errorf("CreateBlockList should have returned an error when an waf.getOrCreateWAFClassicIPSet fails")
+	}
+}
+
 func TestEnableBlockList(t *testing.T) {
 	mockShield := &Shield{
 		waf:    &mockWAFClient{},
@@ -260,7 +311,7 @@ func TestEnableBlockList(t *testing.T) {
 
 func TestEnableBlockListError(t *testing.T) {
 	mockShield := &Shield{
-		waf:    &mockWAFClient{},
+		waf:    &mockWAFErrorClient{},
 		lookup: &mockLookupClient{},
 	}
 
