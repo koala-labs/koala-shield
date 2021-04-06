@@ -9,6 +9,10 @@ import (
 // MOCKS
 type mockWAFClient struct{}
 
+func (c *mockWAFClient) maxWAFClassicIPSetBatchSize() int {
+	return 1
+}
+
 func (c *mockWAFClient) listWAFClassicIPSets() ([]WAFClassicIPSetResponse, error) {
 	return []WAFClassicIPSetResponse{
 		{ID: "1", Name: "one", IPsCount: 6},
@@ -44,6 +48,10 @@ func (c *mockWAFClient) removeIPSetFromWAFClassicRule(RuleID string, IPSetID str
 }
 
 type mockWAFErrorClient struct{}
+
+func (c *mockWAFErrorClient) maxWAFClassicIPSetBatchSize() int {
+	return 1
+}
 
 func (c *mockWAFErrorClient) listWAFClassicIPSets() ([]WAFClassicIPSetResponse, error) {
 	return []WAFClassicIPSetResponse{}, fmt.Errorf("listWAFClassicIPSets failed")

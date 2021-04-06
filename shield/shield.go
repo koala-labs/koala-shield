@@ -57,17 +57,24 @@ func (s *Shield) CreateBlockList(asn string) error {
 		return err
 	}
 
-	var ips []string
+	var ips [][]string
+	ips = append(ips, []string{})
 
 	for _, prefix := range lookup.IPv4 {
 		if s.waf.checkCidrSupportInWAFClassic(prefix.Cidr) {
-			ips = append(ips, prefix.Prefix)
+			ips[len(ips)-1] = append(ips[len(ips)-1], prefix.Prefix)
+		}
+
+		if len(ips[len(ips)-1]) > s.waf.maxWAFClassicIPSetBatchSize() {
+			ips = append(ips, []string{})
 		}
 	}
 
-	err = s.waf.addIPsToWAFClassicIPSet(ipset.ID, ips)
-	if err != nil {
-		return err
+	for _, set := range ips {
+		err = s.waf.addIPsToWAFClassicIPSet(ipset.ID, set)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
