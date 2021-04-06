@@ -335,3 +335,14 @@ func TestRemoveIPSetFromWAFClassicRule(t *testing.T) {
 		t.Errorf("removeIPSetFromWAFClassicRule failed, got: %e", err)
 	}
 }
+
+func TestMaxWAFClassicIPSetBatchSize(t *testing.T) {
+	awsWAFClient := &awsWAFClient{
+		waf: mockedWafRegional{},
+	}
+
+	max := awsWAFClient.maxWAFClassicIPSetBatchSize()
+	if max != 900 {
+		t.Errorf("maxWAFClassicIPSetBatchSize is wrong, got: %d, want: %d.", max, 900)
+	}
+}

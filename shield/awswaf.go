@@ -29,6 +29,7 @@ import (
 )
 
 type wafInterface interface {
+	maxWAFClassicIPSetBatchSize() int
 	listWAFClassicIPSets() ([]WAFClassicIPSetResponse, error)
 	getOrCreateWAFClassicIPSet(name string) (WAFClassicIPSetResponse, error)
 	findWAFClassicIPSet(name string) (string, error)
@@ -53,6 +54,11 @@ func newWAFClient(region string) *awsWAFClient {
 	return &awsWAFClient{
 		waf: wafregional.New(session),
 	}
+}
+
+// maxWAFClassicIPSetBatchSize returns max batch size of IP sets being inserted
+func (c *awsWAFClient) maxWAFClassicIPSetBatchSize() int {
+	return 900
 }
 
 // WAFClassicIPSetResponse represents a set of IP lists from AWS WAF Classic
