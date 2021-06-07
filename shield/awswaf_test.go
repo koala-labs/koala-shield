@@ -184,10 +184,10 @@ func TestListWAFClassicIPSets(t *testing.T) {
 	setA := resp[0]
 	setB := resp[1]
 
-	if !(setA.ID == "A" && setA.Name == "SHIELD-A-IPs" && setA.IPsCount == 1) {
+	if !(setA.ID == "A" && setA.Name == "SHIELD-A-IPs" && len(setA.IPs) == 1) {
 		t.Errorf("listWAFClassicIPSets returned the wrong data for IP Set A, got: %#v\n", setA)
 	}
-	if !(setB.ID == "B" && setB.Name == "SHIELD-B-IPs" && setB.IPsCount == 2) {
+	if !(setB.ID == "B" && setB.Name == "SHIELD-B-IPs" && len(setB.IPs) == 2) {
 		t.Errorf("listWAFClassicIPSets returned the wrong data for IP Set B, got: %#v\n", setB)
 	}
 }
@@ -258,7 +258,7 @@ func TestGetOrCreateWAFClassicIPSet(t *testing.T) {
 		t.Errorf("getOrCreateWAFClassicIPSet failed, got: %e", err)
 	}
 
-	if !(resp.ID == "A" && resp.Name == "SHIELD-A-IPs" && resp.IPsCount == 1) {
+	if !(resp.ID == "A" && resp.Name == "SHIELD-A-IPs" && len(resp.IPs) == 1) {
 		t.Errorf("getOrCreateWAFClassicIPSet returned the wrong data for IP Set A, got: %#v\n", resp)
 	}
 
@@ -268,7 +268,7 @@ func TestGetOrCreateWAFClassicIPSet(t *testing.T) {
 		t.Errorf("getOrCreateWAFClassicIPSet failed, got: %e", err)
 	}
 
-	if !(resp.ID == "C" && resp.Name == "SHIELD-C-IPs" && resp.IPsCount == 0) {
+	if !(resp.ID == "C" && resp.Name == "SHIELD-C-IPs" && len(resp.IPs) == 0) {
 		t.Errorf("getOrCreateWAFClassicIPSet returned the wrong data for IP Set C")
 	}
 }
@@ -322,17 +322,6 @@ func TestAddIPSetToWAFClassicRule(t *testing.T) {
 	err := awsWAFClient.addIPSetToWAFClassicRule("A", "A")
 	if err != nil {
 		t.Errorf("addIPSetToWAFClassicRule failed, got: %e", err)
-	}
-}
-
-func TestRemoveIPSetFromWAFClassicRule(t *testing.T) {
-	awsWAFClient := &awsWAFClient{
-		waf: mockedWafRegional{},
-	}
-
-	err := awsWAFClient.removeIPSetFromWAFClassicRule("A", "A")
-	if err != nil {
-		t.Errorf("removeIPSetFromWAFClassicRule failed, got: %e", err)
 	}
 }
 

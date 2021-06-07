@@ -31,14 +31,15 @@ import (
 type wafInterface interface {
 	maxWAFClassicIPSetBatchSize() int
 	listWAFClassicIPSets() ([]WAFClassicIPSetResponse, error)
+	getWAFClassicIPSet(ipsetID string) (WAFClassicIPSetResponse, error)
 	getOrCreateWAFClassicIPSet(name string) (WAFClassicIPSetResponse, error)
 	findWAFClassicIPSet(name string) (string, error)
 	checkCidrSupportInWAFClassic(cidr int) bool
 	addIPsToWAFClassicIPSet(IPSetID string, IPs []string) error
+	removeIPsFromWAFClassicIPSet(IPSetID string, IPs []string) error
 	getOrCreateWAFClassicRule(name string) (WAFClassicRuleResponse, error)
 	findWAFClassicRule(name string) (string, error)
 	addIPSetToWAFClassicRule(RuleID string, IPSetID string) error
-	removeIPSetFromWAFClassicRule(RuleID string, IPSetID string) error
 }
 
 // awsWAFClient .
@@ -63,9 +64,9 @@ func (c *awsWAFClient) maxWAFClassicIPSetBatchSize() int {
 
 // WAFClassicIPSetResponse represents a set of IP lists from AWS WAF Classic
 type WAFClassicIPSetResponse struct {
-	ID       string
-	Name     string
-	IPsCount int
+	ID   string
+	Name string
+	IPs  []*waf.IPSetDescriptor
 }
 
 // listWAFClassicIPSets returns information about IP sets in WAF Classic
@@ -83,21 +84,33 @@ func (c *awsWAFClient) listWAFClassicIPSets() ([]WAFClassicIPSetResponse, error)
 
 	final := []WAFClassicIPSetResponse{}
 	for _, set := range response.IPSets {
-		resp, err := c.waf.GetIPSet(&waf.GetIPSetInput{
-			IPSetId: set.IPSetId,
-		})
+		resp, err := c.getWAFClassicIPSet(*set.IPSetId)
 
 		if err != nil {
 			return final, err
 		}
 
-		final = append(final, WAFClassicIPSetResponse{
-			ID:       *set.IPSetId,
-			Name:     *set.Name,
-			IPsCount: len(resp.IPSet.IPSetDescriptors),
-		})
+		final = append(final, resp)
 	}
 	return final, nil
+}
+
+// getWAFClassicIPSet returns a WAF Classic IP Sets
+func (c *awsWAFClient) getWAFClassicIPSet(ipsetID string) (WAFClassicIPSetResponse, error) {
+
+	resp, err := c.waf.GetIPSet(&waf.GetIPSetInput{
+		IPSetId: &ipsetID,
+	})
+
+	if err != nil {
+		return WAFClassicIPSetResponse{}, err
+	}
+
+	return WAFClassicIPSetResponse{
+		ID:   *resp.IPSet.IPSetId,
+		Name: *resp.IPSet.Name,
+		IPs:  resp.IPSet.IPSetDescriptors,
+	}, nil
 }
 
 // getOrCreateWAFClassicIPSet creates an IP set in WAF Classic
@@ -125,25 +138,14 @@ func (c *awsWAFClient) getOrCreateWAFClassicIPSet(name string) (WAFClassicIPSetR
 		}
 
 		return WAFClassicIPSetResponse{
-			ID:       *result.IPSet.IPSetId,
-			Name:     *result.IPSet.Name,
-			IPsCount: 0,
+			ID:   *result.IPSet.IPSetId,
+			Name: *result.IPSet.Name,
+			IPs:  []*waf.IPSetDescriptor{},
 		}, nil
 
 	}
-	result, err := c.waf.GetIPSet(&waf.GetIPSetInput{
-		IPSetId: &id,
-	})
 
-	if err != nil {
-		return WAFClassicIPSetResponse{}, err
-	}
-
-	return WAFClassicIPSetResponse{
-		ID:       *result.IPSet.IPSetId,
-		Name:     *result.IPSet.Name,
-		IPsCount: len(result.IPSet.IPSetDescriptors),
-	}, nil
+	return c.getWAFClassicIPSet(id)
 }
 
 // findWAFClassicIPSet searches for an WAF IP Set by name and returns the IP Set ID if it exists
@@ -184,6 +186,15 @@ func (c *awsWAFClient) findWAFClassicIPSet(name string) (string, error) {
 
 // addIPsToWAFClassicIPSet adds specified IP address in CIDR notation to IP Set
 func (c *awsWAFClient) addIPsToWAFClassicIPSet(IPSetID string, IPs []string) error {
+	return c.modifyIPsInIPSet(waf.ChangeActionInsert, IPSetID, IPs)
+}
+
+// removeIPsFromWAFClassicIPSet removes specified IP address in CIDR notation from an IP Set
+func (c *awsWAFClient) removeIPsFromWAFClassicIPSet(IPSetID string, IPs []string) error {
+	return c.modifyIPsInIPSet(waf.ChangeActionDelete, IPSetID, IPs)
+}
+
+func (c *awsWAFClient) modifyIPsInIPSet(action string, IPSetID string, IPs []string) error {
 	token, err := c.waf.GetChangeToken(&waf.GetChangeTokenInput{})
 
 	if err != nil {
@@ -192,7 +203,6 @@ func (c *awsWAFClient) addIPsToWAFClassicIPSet(IPSetID string, IPs []string) err
 
 	updates := []*waf.IPSetUpdate{}
 
-	action := "INSERT"
 	ipv4 := "IPV4"
 
 	for index := range IPs {
@@ -315,12 +325,7 @@ func (c *awsWAFClient) checkCidrSupportInWAFClassic(cidr int) bool {
 
 // addIPSetToWAFClassicRule adds specified IPSet to Rule
 func (c *awsWAFClient) addIPSetToWAFClassicRule(RuleID string, IPSetID string) error {
-	return c.modifyWAFClassicRule("INSERT", RuleID, IPSetID)
-}
-
-// removeIPSetFromWAFClassicRule adds specified IPSet to Rule
-func (c *awsWAFClient) removeIPSetFromWAFClassicRule(RuleID string, IPSetID string) error {
-	return c.modifyWAFClassicRule("DELETE", RuleID, IPSetID)
+	return c.modifyWAFClassicRule(waf.ChangeActionInsert, RuleID, IPSetID)
 }
 
 func (c *awsWAFClient) modifyWAFClassicRule(action string, RuleID string, IPSetID string) error {
