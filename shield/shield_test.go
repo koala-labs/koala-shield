@@ -15,8 +15,8 @@ func (c *mockWAFClient) maxWAFClassicIPSetBatchSize() int {
 
 func (c *mockWAFClient) listWAFClassicIPSets() ([]WAFClassicIPSetResponse, error) {
 	return []WAFClassicIPSetResponse{
-		{ID: "1", Name: "one", IPsCount: 6},
-		{ID: "2", Name: "two", IPsCount: 12},
+		{ID: "1", Name: "one", IPs: nil},
+		{ID: "2", Name: "two", IPs: nil},
 	}, nil
 }
 func (c *mockWAFClient) getOrCreateWAFClassicIPSet(name string) (WAFClassicIPSetResponse, error) {
@@ -28,10 +28,20 @@ func (c *mockWAFClient) findWAFClassicIPSet(name string) (string, error) {
 	}
 	return "", nil
 }
+func (c *mockWAFClient) getWAFClassicIPSet(ipsetID string) (WAFClassicIPSetResponse, error) {
+	return WAFClassicIPSetResponse{
+		ID:   "1",
+		Name: "one",
+		IPs:  nil,
+	}, nil
+}
 func (c *mockWAFClient) checkCidrSupportInWAFClassic(cidr int) bool {
 	return true
 }
 func (c *mockWAFClient) addIPsToWAFClassicIPSet(IPSetID string, IPs []string) error {
+	return nil
+}
+func (c *mockWAFClient) removeIPsFromWAFClassicIPSet(IPSetID string, IPs []string) error {
 	return nil
 }
 func (c *mockWAFClient) getOrCreateWAFClassicRule(name string) (WAFClassicRuleResponse, error) {
@@ -43,9 +53,6 @@ func (c *mockWAFClient) findWAFClassicRule(name string) (string, error) {
 func (c *mockWAFClient) addIPSetToWAFClassicRule(RuleID string, IPSetID string) error {
 	return nil
 }
-func (c *mockWAFClient) removeIPSetFromWAFClassicRule(RuleID string, IPSetID string) error {
-	return nil
-}
 
 type mockWAFErrorClient struct{}
 
@@ -55,6 +62,9 @@ func (c *mockWAFErrorClient) maxWAFClassicIPSetBatchSize() int {
 
 func (c *mockWAFErrorClient) listWAFClassicIPSets() ([]WAFClassicIPSetResponse, error) {
 	return []WAFClassicIPSetResponse{}, fmt.Errorf("listWAFClassicIPSets failed")
+}
+func (c *mockWAFErrorClient) getWAFClassicIPSet(ipsetID string) (WAFClassicIPSetResponse, error) {
+	return WAFClassicIPSetResponse{}, fmt.Errorf("getWAFClassicIPSet failed")
 }
 func (c *mockWAFErrorClient) getOrCreateWAFClassicIPSet(name string) (WAFClassicIPSetResponse, error) {
 	return WAFClassicIPSetResponse{}, fmt.Errorf("getOrCreateWAFClassicIPSet failed")
@@ -68,6 +78,9 @@ func (c *mockWAFErrorClient) checkCidrSupportInWAFClassic(cidr int) bool {
 func (c *mockWAFErrorClient) addIPsToWAFClassicIPSet(IPSetID string, IPs []string) error {
 	return fmt.Errorf("addIPsToWAFClassicIPSet failed")
 }
+func (c *mockWAFErrorClient) removeIPsFromWAFClassicIPSet(IPSetID string, IPs []string) error {
+	return fmt.Errorf("removeIPsFromWAFClassicIPSet failed")
+}
 func (c *mockWAFErrorClient) getOrCreateWAFClassicRule(name string) (WAFClassicRuleResponse, error) {
 	return WAFClassicRuleResponse{}, fmt.Errorf("getOrCreateWAFClassicRule failed")
 }
@@ -76,9 +89,6 @@ func (c *mockWAFErrorClient) findWAFClassicRule(name string) (string, error) {
 }
 func (c *mockWAFErrorClient) addIPSetToWAFClassicRule(RuleID string, IPSetID string) error {
 	return fmt.Errorf("addIPSetToWAFClassicRule failed")
-}
-func (c *mockWAFErrorClient) removeIPSetFromWAFClassicRule(RuleID string, IPSetID string) error {
-	return fmt.Errorf("removeIPSetFromWAFClassicRule failed")
 }
 
 type mockLookupClient struct{}
@@ -198,8 +208,8 @@ func TestListIPSets(t *testing.T) {
 	}
 
 	expected := []WAFClassicIPSetResponse{
-		{ID: "1", Name: "one", IPsCount: 6},
-		{ID: "2", Name: "two", IPsCount: 12},
+		{ID: "1", Name: "one", IPs: nil},
+		{ID: "2", Name: "two", IPs: nil},
 	}
 
 	for index, ipset := range ipsets {

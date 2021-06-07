@@ -87,12 +87,40 @@ func (s *Shield) EnableBlockList(asn string) error {
 		return err
 	}
 
+	ipset, err := s.waf.getWAFClassicIPSet(ipsetID)
+	if err != nil {
+		return err
+	}
+
+	mainIPSet, err := s.waf.getOrCreateWAFClassicIPSet(mainIPSet())
+	if err != nil {
+		return err
+	}
+
+	var ips [][]string
+	ips = append(ips, []string{})
+
+	for _, ip := range ipset.IPs {
+		ips[len(ips)-1] = append(ips[len(ips)-1], *ip.Value)
+
+		if len(ips[len(ips)-1]) > s.waf.maxWAFClassicIPSetBatchSize() {
+			ips = append(ips, []string{})
+		}
+	}
+
+	for _, set := range ips {
+		err = s.waf.addIPsToWAFClassicIPSet(mainIPSet.ID, set)
+		if err != nil {
+			return err
+		}
+	}
+
 	rule, err := s.waf.getOrCreateWAFClassicRule(ruleName())
 	if err != nil {
 		return err
 	}
 
-	err = s.waf.addIPSetToWAFClassicRule(rule.ID, ipsetID)
+	err = s.waf.addIPSetToWAFClassicRule(rule.ID, mainIPSet.ID)
 	if err != nil {
 		return err
 	}
@@ -102,23 +130,41 @@ func (s *Shield) EnableBlockList(asn string) error {
 
 // DisableBlockList will remove a WAF classic IP set for a specific ASN (if it exists) from the SHIELD WAF Rule
 func (s *Shield) DisableBlockList(asn string) error {
-	ipset, err := s.waf.findWAFClassicIPSet(ipsetName(asn))
+	ipsetID, err := s.waf.findWAFClassicIPSet(ipsetName(asn))
 	if err != nil {
 		return err
 	}
 
-	if ipset == "" {
+	if ipsetID == "" {
 		return fmt.Errorf("Could not find a WAF Classic IP Set for ASN %s", asn)
 	}
 
-	rule, err := s.waf.getOrCreateWAFClassicRule(ruleName())
+	ipset, err := s.waf.getWAFClassicIPSet(ipsetID)
 	if err != nil {
 		return err
 	}
 
-	err = s.waf.removeIPSetFromWAFClassicRule(rule.ID, ipset)
+	mainIPSet, err := s.waf.getOrCreateWAFClassicIPSet(mainIPSet())
 	if err != nil {
 		return err
+	}
+
+	var ips [][]string
+	ips = append(ips, []string{})
+
+	for _, ip := range ipset.IPs {
+		ips[len(ips)-1] = append(ips[len(ips)-1], *ip.Value)
+
+		if len(ips[len(ips)-1]) > s.waf.maxWAFClassicIPSetBatchSize() {
+			ips = append(ips, []string{})
+		}
+	}
+
+	for _, set := range ips {
+		err = s.waf.removeIPsFromWAFClassicIPSet(mainIPSet.ID, set)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -186,6 +232,10 @@ func (s *Shield) Lookup(record string) (LookupResponse, error) {
 
 func isIP(host string) bool {
 	return net.ParseIP(host) != nil
+}
+
+func mainIPSet() string {
+	return "KOALA-SHIELD-MAIN-IP-SET"
 }
 
 func ruleName() string {
