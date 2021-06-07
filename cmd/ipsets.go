@@ -50,7 +50,7 @@ var ipsetsCmd = &cobra.Command{
 		}
 		rows := []table.Row{}
 		for _, set := range sets {
-			rows = append(rows, table.Row{"WAF Classic", set.Name, set.ID, set.IPsCount})
+			rows = append(rows, table.Row{"WAF Classic", set.Name, set.ID, len(set.IPs)})
 		}
 
 		t.AppendRows(rows)
