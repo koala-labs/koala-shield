@@ -73,7 +73,7 @@ type WAFClassicIPSetResponse struct {
 func (c *awsWAFClient) listWAFClassicIPSets() ([]WAFClassicIPSetResponse, error) {
 
 	// // Using the session create the WAF Regional client
-	limit := int64(10)
+	limit := int64(50)
 	response, err := c.waf.ListIPSets(&waf.ListIPSetsInput{
 		Limit: &limit,
 	})
