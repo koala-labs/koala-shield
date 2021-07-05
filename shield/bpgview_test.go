@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 )
 
 func TestIpLookupSuccess(t *testing.T) {
@@ -118,8 +119,9 @@ func TestIpLookupSuccess(t *testing.T) {
 	defer mock.Close()
 
 	client := &lookupClient{
-		HTTPClient: &http.Client{},
-		baseURL:    mock.URL,
+		HTTPClient:      &http.Client{},
+		baseURL:         mock.URL,
+		backoffSchedule: []time.Duration{0},
 	}
 
 	ipResponse, err := client.ipLookup("8.6.8.0")
@@ -159,8 +161,9 @@ func TestIpLookupError(t *testing.T) {
 	defer mock.Close()
 
 	client := &lookupClient{
-		HTTPClient: &http.Client{},
-		baseURL:    mock.URL,
+		HTTPClient:      &http.Client{},
+		baseURL:         mock.URL,
+		backoffSchedule: []time.Duration{0},
 	}
 
 	_, err := client.ipLookup("not a real ip")
@@ -178,8 +181,9 @@ func TestIpLookupFailure(t *testing.T) {
 	defer mock.Close()
 
 	client := &lookupClient{
-		HTTPClient: &http.Client{},
-		baseURL:    mock.URL,
+		HTTPClient:      &http.Client{},
+		baseURL:         mock.URL,
+		backoffSchedule: []time.Duration{0},
 	}
 
 	_, err := client.ipLookup("not a real ip")
@@ -198,8 +202,9 @@ func TestIpLookupNotJson(t *testing.T) {
 	defer mock.Close()
 
 	client := &lookupClient{
-		HTTPClient: &http.Client{},
-		baseURL:    mock.URL,
+		HTTPClient:      &http.Client{},
+		baseURL:         mock.URL,
+		backoffSchedule: []time.Duration{0},
 	}
 
 	_, err := client.ipLookup("8.6.8.0")
@@ -264,8 +269,9 @@ func TestAsnLookupSuccess(t *testing.T) {
 	defer mock.Close()
 
 	client := &lookupClient{
-		HTTPClient: &http.Client{},
-		baseURL:    mock.URL,
+		HTTPClient:      &http.Client{},
+		baseURL:         mock.URL,
+		backoffSchedule: []time.Duration{0},
 	}
 
 	asnResponse, err := client.asnLookup("61138")
@@ -308,8 +314,9 @@ func TestAsnLookupError(t *testing.T) {
 	defer mock.Close()
 
 	client := &lookupClient{
-		HTTPClient: &http.Client{},
-		baseURL:    mock.URL,
+		HTTPClient:      &http.Client{},
+		baseURL:         mock.URL,
+		backoffSchedule: []time.Duration{0},
 	}
 
 	_, err := client.asnLookup("not a real asn")
@@ -327,8 +334,9 @@ func TestAsnLookupFailure(t *testing.T) {
 	defer mock.Close()
 
 	client := &lookupClient{
-		HTTPClient: &http.Client{},
-		baseURL:    mock.URL,
+		HTTPClient:      &http.Client{},
+		baseURL:         mock.URL,
+		backoffSchedule: []time.Duration{0},
 	}
 
 	_, err := client.asnLookup("not a real asn")
@@ -441,8 +449,9 @@ func TestAsnPrefixesLookupSuccess(t *testing.T) {
 	defer mock.Close()
 
 	client := &lookupClient{
-		HTTPClient: &http.Client{},
-		baseURL:    mock.URL,
+		HTTPClient:      &http.Client{},
+		baseURL:         mock.URL,
+		backoffSchedule: []time.Duration{0},
 	}
 
 	asnPrefixesResponse, err := client.asnPrefixesLookup("61138")
@@ -476,8 +485,9 @@ func TestAsnPrefixesLookupError(t *testing.T) {
 	defer mock.Close()
 
 	client := &lookupClient{
-		HTTPClient: &http.Client{},
-		baseURL:    mock.URL,
+		HTTPClient:      &http.Client{},
+		baseURL:         mock.URL,
+		backoffSchedule: []time.Duration{0},
 	}
 
 	_, err := client.asnPrefixesLookup("not a real asn")
@@ -495,8 +505,9 @@ func TestAsnPrefixesLookupFailure(t *testing.T) {
 	defer mock.Close()
 
 	client := &lookupClient{
-		HTTPClient: &http.Client{},
-		baseURL:    mock.URL,
+		HTTPClient:      &http.Client{},
+		baseURL:         mock.URL,
+		backoffSchedule: []time.Duration{0},
 	}
 
 	_, err := client.asnPrefixesLookup("not a real asn")

@@ -21,7 +21,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"net/http/httputil"
 	"time"
 )
 
@@ -33,9 +32,18 @@ type lookupInterface interface {
 
 // lookupClient .
 type lookupClient struct {
-	baseURL    string
-	limiter    <-chan time.Time
-	HTTPClient *http.Client
+	baseURL         string
+	backoffSchedule []time.Duration
+	HTTPClient      *http.Client
+}
+
+// backoffSchedule dictates how often and when to retry failed HTTP requests.
+// After the last attempt the retries stop and the request is accepted as failed.
+var defaultBackoffSchedule = []time.Duration{
+	1 * time.Second,
+	3 * time.Second,
+	5 * time.Second,
+	10 * time.Second,
 }
 
 // newLookupClient creates new bgpview.io BPGViewClient to lookup IP and ASN information
@@ -44,8 +52,8 @@ func newLookupClient() *lookupClient {
 		HTTPClient: &http.Client{
 			Timeout: 5 * time.Minute,
 		},
-		limiter: time.Tick(1 * time.Second),
-		baseURL: "https://api.bgpview.io",
+		backoffSchedule: defaultBackoffSchedule,
+		baseURL:         "https://api.bgpview.io",
 	}
 }
 
@@ -56,29 +64,37 @@ type response struct {
 }
 
 func (c *lookupClient) send(req *http.Request, data interface{}) error {
-	// give the BPGView API a bit of time between requests to avoid 503 and rate limitting
-	if c.limiter != nil {
-		<-c.limiter
-	}
-
 	req.Header.Set("Accept", "application/json; charset=utf-8")
 
-	res, err := c.HTTPClient.Do(req)
+	execute := func(req *http.Request) (*http.Response, error) {
+		res, err := c.HTTPClient.Do(req)
+		if err != nil {
+			return res, err
+		}
+
+		// Only 200 status codes are considered successful
+		if res.StatusCode != http.StatusOK {
+			return res, fmt.Errorf("unknown error, status code: %d", res.StatusCode)
+		}
+
+		return res, nil
+	}
+
+	var err error
+	var res *http.Response
+	for _, backoff := range c.backoffSchedule {
+		res, err = execute(req)
+		if err == nil {
+			break
+		}
+		time.Sleep(backoff)
+	}
+
 	if err != nil {
 		return err
 	}
 
 	defer res.Body.Close()
-
-	// Handle error status codes
-	if res.StatusCode != http.StatusOK {
-		requestDump, err := httputil.DumpRequest(req, true)
-		if err != nil {
-			fmt.Println(err)
-		}
-		fmt.Println(string(requestDump))
-		return fmt.Errorf("unknown error, status code: %d", res.StatusCode)
-	}
 
 	// Unmarshall and populate data
 	finalRes := response{
