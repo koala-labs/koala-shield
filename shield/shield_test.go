@@ -144,6 +144,23 @@ func (c *mockLookupClient) asnPrefixesLookup(asn string) (*asnPrefixesLookupResp
 	return &response, nil
 }
 
+type mockLookupErrorClient struct{}
+
+func (c *mockLookupErrorClient) ipLookup(ip string) (*ipLookupResponse, error) {
+	var response ipLookupResponse
+
+	response.IP = ip
+	response.Prefixes = []ipPrefixes{}
+
+	return &response, nil
+}
+func (c *mockLookupErrorClient) asnLookup(asn string) (*asnLookupResponse, error) {
+	return &asnLookupResponse{}, fmt.Errorf("asnLookup failed")
+}
+func (c *mockLookupErrorClient) asnPrefixesLookup(asn string) (*asnPrefixesLookupResponse, error) {
+	return &asnPrefixesLookupResponse{}, fmt.Errorf("asnPrefixesLookup failed")
+}
+
 // TESTS
 func TestNewShield(t *testing.T) {
 	shield := NewShield("us-east-1")
@@ -197,6 +214,24 @@ func TestLookup(t *testing.T) {
 		t.Errorf("TestLookup for IP ASN IPv4 count was incorrect, got: %d, want: %d.", ipResponse.AsnIPv4Count, 2)
 	}
 }
+
+func TestLookupNoResults(t *testing.T) {
+	mockShield := &Shield{waf: &mockWAFClient{}, lookup: &mockLookupErrorClient{}}
+
+	asn := "20473"
+
+	_, err := mockShield.Lookup(asn)
+	if err == nil {
+		t.Errorf("Lookup should have returned an error when an lookup.asnLookup fails")
+	}
+
+	ip := "8.6.8.0"
+	_, err = mockShield.Lookup(ip)
+	if err == nil {
+		t.Errorf("Lookup should have returned an error when an lookup.ipLookup returns no results")
+	}
+}
+
 
 func TestListIPSets(t *testing.T) {
 	mockShield := &Shield{waf: &mockWAFClient{}, lookup: &mockLookupClient{}}

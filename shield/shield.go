@@ -207,6 +207,11 @@ func (s *Shield) Lookup(record string) (LookupResponse, error) {
 		sort.SliceStable(response.Prefixes, func(i, j int) bool {
 			return response.Prefixes[i].Cidr > response.Prefixes[j].Cidr
 		})
+
+		if len(response.Prefixes) == 0 {
+			return LookupResponse{}, fmt.Errorf("Unable to find any information for IP: %s", record)
+		}
+
 		prefix = response.Prefixes[0]
 
 		prefixes, err := s.lookup.asnPrefixesLookup(fmt.Sprint(prefix.Asn.Number))
