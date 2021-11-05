@@ -163,7 +163,7 @@ func (c *mockLookupErrorClient) asnPrefixesLookup(asn string) (*asnPrefixesLooku
 
 // TESTS
 func TestNewShield(t *testing.T) {
-	shield := NewShield("us-east-1")
+	shield := NewShield()
 
 	if shield.waf == nil {
 		t.Errorf("TestNewShield did not initialize waf attribute correctly")

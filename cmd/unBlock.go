@@ -31,13 +31,7 @@ var unBlockCmd = &cobra.Command{
 	Use:   "un-block",
 	Short: "Un-block an ASN by removing their IP Set from WAF Rules",
 	Run: func(cmd *cobra.Command, args []string) {
-		region, err := cmd.Flags().GetString("aws-region")
-		if err != nil {
-			fmt.Println(aurora.Red(err))
-			os.Exit(1)
-		}
-
-		s := shield.NewShield(region)
+		s := shield.NewShield()
 
 		for _, asn := range args {
 			err := s.DisableBlockList(asn)

@@ -48,9 +48,9 @@ type awsWAFClient struct {
 }
 
 // newWAFClient creates a new client and loads the default AWS config
-func newWAFClient(region string) *awsWAFClient {
-	session := session.Must(session.NewSession(&aws.Config{
-		Region: aws.String(region),
+func newWAFClient() *awsWAFClient {
+	session := session.Must(session.NewSessionWithOptions(session.Options{
+		SharedConfigState: session.SharedConfigEnable,
 	}))
 	return &awsWAFClient{
 		waf: wafregional.New(session),

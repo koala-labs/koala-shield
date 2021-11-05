@@ -31,13 +31,8 @@ var ipsetsCmd = &cobra.Command{
 	Use:   "ipsets",
 	Short: "List all IP sets registered in AWS WAF",
 	Run: func(cmd *cobra.Command, args []string) {
-		region, err := cmd.Flags().GetString("aws-region")
-		if err != nil {
-			fmt.Println(aurora.Red(err))
-			os.Exit(1)
-		}
 
-		s := shield.NewShield(region)
+		s := shield.NewShield()
 
 		t := table.NewWriter()
 		t.SetOutputMirror(os.Stdout)

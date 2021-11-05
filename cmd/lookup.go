@@ -32,12 +32,7 @@ var lookupCmd = &cobra.Command{
 	Use:   "lookup",
 	Short: "Lookup information about IP addresses and ASN numbers",
 	Run: func(cmd *cobra.Command, args []string) {
-		region, err := cmd.Flags().GetString("aws-region")
-		if err != nil {
-			fmt.Println(aurora.Red(err))
-			os.Exit(1)
-		}
-		s := shield.NewShield(region)
+		s := shield.NewShield()
 
 		output := []table.Row{}
 

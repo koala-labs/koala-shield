@@ -58,10 +58,7 @@ Koala Shield requires Go 1.15 or higher. As a prerequisite please [download and 
    ```sh
    go get github.com/koala-labs/koala-shield
    ```
-2. Set your [AWS credentials](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html#cli-configure-quickstart-config) and make sure to export your desired AWS region.
-   ```sh
-   export AWS_REGION=region
-   ```
+2. Set your [AWS credentials](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html#cli-configure-quickstart-config) and make sure to export your desired AWS region in the AWS config file.
 
 <!-- USAGE EXAMPLES -->
 

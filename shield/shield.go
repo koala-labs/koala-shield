@@ -31,8 +31,8 @@ type Shield struct {
 }
 
 // NewShield creates a new client and loads the default AWS config
-func NewShield(region string) *Shield {
-	waf := newWAFClient(region)
+func NewShield() *Shield {
+	waf := newWAFClient()
 
 	bpg := newLookupClient()
 	return &Shield{

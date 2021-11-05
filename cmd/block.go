@@ -31,13 +31,7 @@ var blockCmd = &cobra.Command{
 	Use:   "block",
 	Short: "Block all the prefixes owned by an ASN using an AWS WAF IP list",
 	Run: func(cmd *cobra.Command, args []string) {
-		region, err := cmd.Flags().GetString("aws-region")
-		if err != nil {
-			fmt.Println(aurora.Red(err))
-			os.Exit(1)
-		}
-
-		s := shield.NewShield(region)
+		s := shield.NewShield()
 
 		for _, asn := range args {
 			err := s.CreateBlockList(asn)
